@@ -21,9 +21,17 @@ endif()
 
 find_package(OpenMP COMPONENTS CXX)
 
-set(SOURCES main.cpp tgaimage.cpp)
+# Add include directory
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/inc)
+
+# Automatically collect all src/*.cpp files
+file(GLOB SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
-target_link_libraries(${PROJECT_NAME} PRIVATE $<$<BOOL:${OpenMP_CXX_FOUND}>:OpenMP::OpenMP_CXX>)
+
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        $<$<BOOL:${OpenMP_CXX_FOUND}>:OpenMP::OpenMP_CXX>
+)
 
 file(GENERATE OUTPUT .gitignore CONTENT "*")
