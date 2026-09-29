@@ -126,7 +126,11 @@ int main(int argc, char** argv) {
         
             
 
-            
+            TGAColor rnd;
+            for (int d = 0; d < 3; d++) rnd[d] = std::rand() % 255;
+
+
+            triangle(first_p.x, first_p.y, second_p.x, second_p.y, third_p.x, third_p.y, framebuffer, rnd);
         }
     }
 
