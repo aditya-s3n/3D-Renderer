@@ -43,6 +43,49 @@ void line(int ax, int ay, int bx, int by, TGAImage &framebuffer, TGAColor color)
     }   
 }
 
+
+double subtriangle_area(double ax, double ay, double bx, double by, double cx, double cy) {
+    return ((by - ay)*(bx + ax) + (cy - by)*(cx + bx) + (ay - cy)*(ax + cx)) / 2;
+}
+
+// modern raster approach
+void triangle(int ax, int ay, int bx, int by, int cx, int cy, TGAImage& framebuffer, TGAColor color) {
+
+    // find bounding box
+    int bb_min_x = std::min(std::min(ax, bx), cx);
+    int bb_min_y = std::min(std::min(ay, by), cy);
+    int bb_max_x = std::max(std::max(ax, bx), cx);
+    int bb_max_y = std::max(std::max(ay, by), cy);
+
+
+    // get barycentric coordinates
+    /** Splits triangle into 3 sub-triangles to calculates the area
+        * if sub-triangle area proportial = full triangle area proportial then P is inside triangle
+    */
+    double total_area = subtriangle_area(ax, by, bx, by, cx, cy);
+
+    // loop through bounding x
+    #pragma omp parallel for
+    for (int x = bb_min_x; x <= bb_max_x; x++) {
+        // loop through bounding y
+        for (int y = bb_min_y; y <= bb_max_y; y++) {
+            // check if negative (pixel not in triangle)
+            double alpha = subtriangle_area(x, y, bx, by, cx, cy);
+            double beta = subtriangle_area(ax, ay, x, y, cx, cy);
+            double gamma = subtriangle_area(ax, ay, bx, by, x, y);
+
+
+            if (alpha < 0 || beta < 0 || gamma < 0) continue;
+
+
+            // place pixel
+            framebuffer.set(x, y, color);
+        }
+    } 
+}
+
+
+
 int main(int argc, char** argv) {
     constexpr int width  = 1000;
     constexpr int height = 1000;
@@ -83,16 +126,7 @@ int main(int argc, char** argv) {
         
             
 
-            // lines of wireframe
-            line(first_p.x, first_p.y, second_p.x, second_p.y, framebuffer, red);
-            line(second_p.x, second_p.y, third_p.x, third_p.y , framebuffer, red);
-            line(first_p.x, first_p.y, third_p.x, third_p.y, framebuffer, red);
-            line(first_p.x, first_p.y , second_p.x , second_p.y , framebuffer, red);
-
-            // vertex of wireframe
-            framebuffer.set(first_p.x , first_p.y , white);
-            framebuffer.set(second_p.x , second_p.y, white);
-            framebuffer.set(third_p.x , third_p.y , white);
+            
         }
     }
 
