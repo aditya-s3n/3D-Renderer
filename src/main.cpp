@@ -63,16 +63,17 @@ void triangle(int ax, int ay, int bx, int by, int cx, int cy, TGAImage& framebuf
         * if sub-triangle area proportial = full triangle area proportial then P is inside triangle
     */
     double total_area = subtriangle_area(ax, by, bx, by, cx, cy);
+    if (total_area < 1) return;
 
     // loop through bounding x
-    #pragma omp parallel for
+#pragma omp parallel for
     for (int x = bb_min_x; x <= bb_max_x; x++) {
         // loop through bounding y
         for (int y = bb_min_y; y <= bb_max_y; y++) {
             // check if negative (pixel not in triangle)
-            double alpha = subtriangle_area(x, y, bx, by, cx, cy);
-            double beta = subtriangle_area(ax, ay, x, y, cx, cy);
-            double gamma = subtriangle_area(ax, ay, bx, by, x, y);
+            double alpha = subtriangle_area(x, y, bx, by, cx, cy) / total_area;
+            double beta = subtriangle_area(x, y, cx, cy, ax, ay) / total_area;
+            double gamma = subtriangle_area(x, y, ax, ay, bx, by) / total_area;
 
 
             if (alpha < 0 || beta < 0 || gamma < 0) continue;
