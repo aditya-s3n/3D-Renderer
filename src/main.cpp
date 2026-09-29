@@ -62,7 +62,7 @@ void triangle(int ax, int ay, int bx, int by, int cx, int cy, TGAImage& framebuf
     /** Splits triangle into 3 sub-triangles to calculates the area
         * if sub-triangle area proportial = full triangle area proportial then P is inside triangle
     */
-    double total_area = subtriangle_area(ax, by, bx, by, cx, cy);
+    double total_area = subtriangle_area(ax, ay, bx, by, cx, cy);
     if (total_area < 1) return;
 
     // loop through bounding x
@@ -72,8 +72,8 @@ void triangle(int ax, int ay, int bx, int by, int cx, int cy, TGAImage& framebuf
         for (int y = bb_min_y; y <= bb_max_y; y++) {
             // check if negative (pixel not in triangle)
             double alpha = subtriangle_area(x, y, bx, by, cx, cy) / total_area;
-            double beta = subtriangle_area(x, y, cx, cy, ax, ay) / total_area;
-            double gamma = subtriangle_area(x, y, ax, ay, bx, by) / total_area;
+            double beta = subtriangle_area(ax, ay, x, y, cx, cy) / total_area;
+            double gamma = subtriangle_area(ax, ay, bx, by, x, y) / total_area;
 
 
             if (alpha < 0 || beta < 0 || gamma < 0) continue;
