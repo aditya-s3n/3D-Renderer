@@ -44,12 +44,13 @@ void line(int ax, int ay, int bx, int by, TGAImage &framebuffer, TGAColor color)
 }
 
 
+// shoelace formula
 double subtriangle_area(double ax, double ay, double bx, double by, double cx, double cy) {
     return ((by - ay)*(bx + ax) + (cy - by)*(cx + bx) + (ay - cy)*(ax + cx)) / 2;
 }
 
 // modern raster approach
-void triangle(int ax, int ay, int bx, int by, int cx, int cy, TGAImage& framebuffer, TGAColor color) {
+void triangle(int ax, int ay, int az, int bx, int by, int bz, int cx, int cy, int cz, TGAImage& framebuffer) {
 
     // find bounding box
     int bb_min_x = std::min(std::min(ax, bx), cx);
@@ -79,8 +80,10 @@ void triangle(int ax, int ay, int bx, int by, int cx, int cy, TGAImage& framebuf
             if (alpha < 0 || beta < 0 || gamma < 0) continue;
 
 
+            unsigned char z = static_cast<unsigned char>(alpha * ax + beta * bz + gamma * cz);
+
             // place pixel
-            framebuffer.set(x, y, color);
+            framebuffer.set(x, y, {z});
         }
     } 
 }
@@ -88,53 +91,59 @@ void triangle(int ax, int ay, int bx, int by, int cx, int cy, TGAImage& framebuf
 
 
 int main(int argc, char** argv) {
-    constexpr int width  = 1000;
-    constexpr int height = 1000;
+    constexpr int width  = 64;
+    constexpr int height = 64;
     TGAImage framebuffer(width, height, TGAImage::RGB);
 
-    std::vector<Model> model_list;
+    // std::vector<Model> model_list;
 
 
     
-    for (int i = 1; i < argc; i++) {
-        Model new_model;
-        if (new_model.load_model(argv[i])) {
-            std::cout << "CREATED " << new_model.get_vertex_list().size() << " Vertices\n";
-            std::cout << "CREATED " << new_model.get_face_list().size() << " Faces\n";
+    // for (int i = 1; i < argc; i++) {
+    //     Model new_model;
+    //     if (new_model.load_model(argv[i])) {
+    //         std::cout << "CREATED " << new_model.get_vertex_list().size() << " Vertices\n";
+    //         std::cout << "CREATED " << new_model.get_face_list().size() << " Faces\n";
 
-            model_list.push_back(new_model);
-        } else {
-            std::cerr << "FAILED TO LOAD MODEL\n";
-            return 1;
-        }
-    }
+    //         model_list.push_back(new_model);
+    //     } else {
+    //         std::cerr << "FAILED TO LOAD MODEL\n";
+    //         return 1;
+    //     }
+    // }
     
 
     
    
     
-    for (size_t i = 0; i < model_list.size(); i++) {
-        for (size_t j = 0; j < model_list[i].get_face_list().size(); j++) {
+    // for (size_t i = 0; i < model_list.size(); i++) {
+    //     for (size_t j = 0; j < model_list[i].get_face_list().size(); j++) {
 
-            int v1 = model_list[i].get_face_list()[j].v1 - 1;
-            int v2 = model_list[i].get_face_list()[j].v2 - 1;
-            int v3 = model_list[i].get_face_list()[j].v3 - 1;
+    //         int v1 = model_list[i].get_face_list()[j].v1 - 1;
+    //         int v2 = model_list[i].get_face_list()[j].v2 - 1;
+    //         int v3 = model_list[i].get_face_list()[j].v3 - 1;
 
-            vec3 first_p = model_list[i].get_scaled_point(width, height, v1);
-            vec3 second_p = model_list[i].get_scaled_point(width, height, v2);
-            vec3 third_p = model_list[i].get_scaled_point(width, height, v3);
+    //         vec3 first_p = model_list[i].get_scaled_point(width, height, v1);
+    //         vec3 second_p = model_list[i].get_scaled_point(width, height, v2);
+    //         vec3 third_p = model_list[i].get_scaled_point(width, height, v3);
 
         
             
 
-            TGAColor rnd;
-            for (int d = 0; d < 3; d++) rnd[d] = std::rand() % 255;
+    //         TGAColor rnd;
+    //         for (int d = 0; d < 3; d++) rnd[d] = std::rand() % 255;
 
 
-            triangle(first_p.x, first_p.y, second_p.x, second_p.y, third_p.x, third_p.y, framebuffer, rnd);
-        }
-    }
+    //         triangle(first_p.x, first_p.y, second_p.x, second_p.y, third_p.x, third_p.y, framebuffer, rnd);
+    //     }
+    // }
+    
 
+    int ax = 17, ay =  4, az =  13;
+    int bx = 55, by = 39, bz = 128;
+    int cx = 23, cy = 59, cz = 255;
+
+    triangle(ax, ay, az, bx, by, bz, cx, cy, cz, framebuffer);
     
 
 
