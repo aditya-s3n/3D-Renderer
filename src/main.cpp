@@ -50,7 +50,7 @@ double subtriangle_area(double ax, double ay, double bx, double by, double cx, d
 }
 
 // modern raster approach
-void triangle(int ax, int ay, int az, int bx, int by, int bz, int cx, int cy, int cz, TGAImage& framebuffer) {
+void triangle(int ax, int ay, TGAColor ca, int bx, int by, TGAColor cb, int cx, int cy, TGAColor cc, TGAImage& framebuffer) {
 
     // find bounding box
     int bb_min_x = std::min(std::min(ax, bx), cx);
@@ -80,10 +80,13 @@ void triangle(int ax, int ay, int az, int bx, int by, int bz, int cx, int cy, in
             if (alpha < 0 || beta < 0 || gamma < 0) continue;
 
 
-            unsigned char z = static_cast<unsigned char>(alpha * ax + beta * bz + gamma * cz);
-
+            TGAColor z_color;
+            for (int i = 0; i < 3; i++) {
+                z_color[i] = static_cast<unsigned char>(alpha * ca[i] + beta * cb[i] + gamma * cc[i]);
+            }
+        
             // place pixel
-            framebuffer.set(x, y, {z});
+            framebuffer.set(x, y, z_color);
         }
     } 
 }
@@ -91,8 +94,8 @@ void triangle(int ax, int ay, int az, int bx, int by, int bz, int cx, int cy, in
 
 
 int main(int argc, char** argv) {
-    constexpr int width  = 64;
-    constexpr int height = 64;
+    constexpr int width  = 1000;
+    constexpr int height = 1000;
     TGAImage framebuffer(width, height, TGAImage::RGB);
 
     // std::vector<Model> model_list;
@@ -139,11 +142,17 @@ int main(int argc, char** argv) {
     // }
     
 
-    int ax = 17, ay =  4, az =  13;
-    int bx = 55, by = 39, bz = 128;
-    int cx = 23, cy = 59, cz = 255;
 
-    triangle(ax, ay, az, bx, by, bz, cx, cy, cz, framebuffer);
+    constexpr double s = width / 64.0;
+
+    TGAColor ca = { 0, 255, 0 };
+    TGAColor cb = { 0, 0, 255 };
+    TGAColor cc = { 255, 0, 0 };
+    int ax = 17*s, ay =  4*s;
+    int bx = 55*s, by = 39*s;
+    int cx = 23*s, cy = 59*s;
+
+    triangle(ax, ay, ca, bx, by, cb, cx, cy, cc, framebuffer);
     
 
 
