@@ -79,6 +79,10 @@ void triangle(int ax, int ay, TGAColor ca, int bx, int by, TGAColor cb, int cx, 
 
             if (alpha < 0 || beta < 0 || gamma < 0) continue;
 
+            // wireframe
+            constexpr double t = 0.1; // edge thickness in barycentric units
+            if (alpha > t && beta > t && gamma > t) continue;
+
 
             TGAColor z_color;
             for (int i = 0; i < 3; i++) {
