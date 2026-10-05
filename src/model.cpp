@@ -44,7 +44,7 @@ vec3 Model::get_scaled_point(int width, int height, int v_index) {
 
     scaled_vals.x = vertices[v_index].x * (width / 2) + (width / 2);
     scaled_vals.y = vertices[v_index].y * (height / 2) + (height / 2);
-    scaled_vals.z = vertices[v_index].z;
+    scaled_vals.z = (vertices[v_index].z + 1) * (255.0 / 2);
 
 
     return scaled_vals;

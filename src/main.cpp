@@ -50,7 +50,7 @@ double subtriangle_area(double ax, double ay, double bx, double by, double cx, d
 }
 
 // modern raster approach
-void triangle(int ax, int ay, TGAColor ca, int bx, int by, TGAColor cb, int cx, int cy, TGAColor cc, TGAImage& framebuffer) {
+void triangle(int ax, int ay, int az, int bx, int by, int bz, int cx, int cy, int cz, TGAImage& framebuffer, TGAImage &zbuffer, TGAColor color) {
 
     // find bounding box
     int bb_min_x = std::min(std::min(ax, bx), cx);
@@ -80,17 +80,20 @@ void triangle(int ax, int ay, TGAColor ca, int bx, int by, TGAColor cb, int cx, 
             if (alpha < 0 || beta < 0 || gamma < 0) continue;
 
             // wireframe
-            constexpr double t = 0.1; // edge thickness in barycentric units
-            if (alpha > t && beta > t && gamma > t) continue;
+            // constexpr double t = 0.1; // edge thickness in barycentric units
+            // if (alpha > t && beta > t && gamma > t) continue;
 
 
-            TGAColor z_color;
-            for (int i = 0; i < 3; i++) {
-                z_color[i] = static_cast<unsigned char>(alpha * ca[i] + beta * cb[i] + gamma * cc[i]);
-            }
+
+            unsigned char z = static_cast<unsigned char>(alpha * az + beta * bz + gamma * cz);
+            zbuffer.set(x, y, { z });
+            // TGAColor z_color;
+            // for (int i = 0; i < 3; i++) {
+            //     z_color[i] = static_cast<unsigned char>(alpha * ca[i] + beta * cb[i] + gamma * cc[i]);
+            // }
         
             // place pixel
-            framebuffer.set(x, y, z_color);
+            framebuffer.set(x, y, color);
         }
     } 
 }
@@ -101,66 +104,68 @@ int main(int argc, char** argv) {
     constexpr int width  = 1000;
     constexpr int height = 1000;
     TGAImage framebuffer(width, height, TGAImage::RGB);
+    TGAImage zbuffer(width, height, TGAImage::GRAYSCALE);
 
-    // std::vector<Model> model_list;
+    std::vector<Model> model_list;
 
 
     
-    // for (int i = 1; i < argc; i++) {
-    //     Model new_model;
-    //     if (new_model.load_model(argv[i])) {
-    //         std::cout << "CREATED " << new_model.get_vertex_list().size() << " Vertices\n";
-    //         std::cout << "CREATED " << new_model.get_face_list().size() << " Faces\n";
+    for (int i = 1; i < argc; i++) {
+        Model new_model;
+        if (new_model.load_model(argv[i])) {
+            std::cout << "CREATED " << new_model.get_vertex_list().size() << " Vertices\n";
+            std::cout << "CREATED " << new_model.get_face_list().size() << " Faces\n";
 
-    //         model_list.push_back(new_model);
-    //     } else {
-    //         std::cerr << "FAILED TO LOAD MODEL\n";
-    //         return 1;
-    //     }
-    // }
+            model_list.push_back(new_model);
+        } else {
+            std::cerr << "FAILED TO LOAD MODEL\n";
+            return 1;
+        }
+    }
     
 
     
    
     
-    // for (size_t i = 0; i < model_list.size(); i++) {
-    //     for (size_t j = 0; j < model_list[i].get_face_list().size(); j++) {
+    for (size_t i = 0; i < model_list.size(); i++) {
+        for (size_t j = 0; j < model_list[i].get_face_list().size(); j++) {
 
-    //         int v1 = model_list[i].get_face_list()[j].v1 - 1;
-    //         int v2 = model_list[i].get_face_list()[j].v2 - 1;
-    //         int v3 = model_list[i].get_face_list()[j].v3 - 1;
+            int v1 = model_list[i].get_face_list()[j].v1 - 1;
+            int v2 = model_list[i].get_face_list()[j].v2 - 1;
+            int v3 = model_list[i].get_face_list()[j].v3 - 1;
 
-    //         vec3 first_p = model_list[i].get_scaled_point(width, height, v1);
-    //         vec3 second_p = model_list[i].get_scaled_point(width, height, v2);
-    //         vec3 third_p = model_list[i].get_scaled_point(width, height, v3);
+            vec3 first_p = model_list[i].get_scaled_point(width, height, v1);
+            vec3 second_p = model_list[i].get_scaled_point(width, height, v2);
+            vec3 third_p = model_list[i].get_scaled_point(width, height, v3);
 
         
             
 
-    //         TGAColor rnd;
-    //         for (int d = 0; d < 3; d++) rnd[d] = std::rand() % 255;
+            TGAColor rnd;
+            for (int d = 0; d < 3; d++) rnd[d] = std::rand() % 255;
 
 
-    //         triangle(first_p.x, first_p.y, second_p.x, second_p.y, third_p.x, third_p.y, framebuffer, rnd);
-    //     }
-    // }
+            triangle(first_p.x, first_p.y, first_p.z, second_p.x, second_p.y, second_p.z,third_p.x, third_p.y, third_p.z,framebuffer, zbuffer, rnd);
+        }
+    }
     
 
 
-    constexpr double s = width / 64.0;
+    // constexpr double s = width / 64.0;
 
-    TGAColor ca = { 0, 255, 0 };
-    TGAColor cb = { 0, 0, 255 };
-    TGAColor cc = { 255, 0, 0 };
-    int ax = 17*s, ay =  4*s;
-    int bx = 55*s, by = 39*s;
-    int cx = 23*s, cy = 59*s;
+    // TGAColor ca = { 0, 255, 0 };
+    // TGAColor cb = { 0, 0, 255 };
+    // TGAColor cc = { 255, 0, 0 };
+    // int ax = 17*s, ay =  4*s;
+    // int bx = 55*s, by = 39*s;
+    // int cx = 23*s, cy = 59*s;
 
-    triangle(ax, ay, ca, bx, by, cb, cx, cy, cc, framebuffer);
+    // triangle(ax, ay, ca, bx, by, cb, cx, cy, cc, framebuffer);
     
 
 
     framebuffer.write_tga_file("framebuffer.tga");
+    zbuffer.write_tga_file("zbuffer.tga");
     return 0;
 }
 
