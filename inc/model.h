@@ -2,13 +2,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
-
-
-struct vec3 {
-    float x;
-    float y;
-    float z;
-};
+#include "vectors.h"
 
 struct face {
     int v1;
