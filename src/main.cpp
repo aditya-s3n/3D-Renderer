@@ -86,7 +86,12 @@ void triangle(int ax, int ay, int az, int bx, int by, int bz, int cx, int cy, in
 
 
             unsigned char z = static_cast<unsigned char>(alpha * az + beta * bz + gamma * cz);
-            zbuffer.set(x, y, { z });
+
+            // if point is behind another skip this
+            if (z <= zbuffer.get(x, y)[0]) continue;
+            zbuffer.set(x, y, { z }); // set pixel
+
+
             // TGAColor z_color;
             // for (int i = 0; i < 3; i++) {
             //     z_color[i] = static_cast<unsigned char>(alpha * ca[i] + beta * cb[i] + gamma * cc[i]);
