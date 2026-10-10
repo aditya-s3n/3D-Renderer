@@ -41,9 +41,9 @@ bool Model::load_model(std::string file_path) {
 vec3 Model::get_scaled_point(int width, int height, int v_index) {
     vec3 scaled_vals;
 
-    // rotate model before scaling points
-    vec3 v = rotation(vertices[v_index]);
-
+    // rotate & change perspective model before scaling points
+    vec3 v = perspective(rotation(vertices[v_index]));
+    
     scaled_vals.x = v.x * (width / 2) + (width / 2);
     scaled_vals.y = v.y * (height / 2) + (height / 2);
     scaled_vals.z = (v.z + 1) * (255.0 / 2);
@@ -53,10 +53,15 @@ vec3 Model::get_scaled_point(int width, int height, int v_index) {
 }
 
 
-vec3 Model::rotation(vec3 v) {
-    constexpr double a = M_PI / 6;
+vec3 Model::rotation(vec3 v, double angle) {
+    double a = M_PI / angle;
 
     const mat<3,3> Ry = {{{std::cos(a), 0, std::sin(a)}, {0, 1, 0}, {-std::sin(a), 0, std::cos(a)}}};
 
     return Ry * v;
+}
+
+vec3 Model::perspective(vec3 v, double c) {
+    
+    return v / (1 - v.z / c);
 }

@@ -31,7 +31,9 @@ class Model {
         std::vector<vec3> get_vertex_list() { return vertices; }
         std::vector<face> get_face_list() { return faces; }
 
-        vec3 rotation(vec3 v);
+        vec3 rotation(vec3 v, double angle = 6.0);
+
+        vec3 perspective(vec3 v, double c = 3.0);
 
     
 
