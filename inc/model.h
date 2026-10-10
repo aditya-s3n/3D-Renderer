@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include "vectors.h"
+#include "matrices.h"
 
 struct face {
     int v1;
@@ -30,6 +31,7 @@ class Model {
         std::vector<vec3> get_vertex_list() { return vertices; }
         std::vector<face> get_face_list() { return faces; }
 
+        vec3 rotation(vec3 v);
 
     
 

@@ -142,8 +142,8 @@ int main(int argc, char** argv) {
             vec3 first_p = model_list[i].get_scaled_point(width, height, v1);
             vec3 second_p = model_list[i].get_scaled_point(width, height, v2);
             vec3 third_p = model_list[i].get_scaled_point(width, height, v3);
-
-        
+            
+            
             
 
             TGAColor rnd;

@@ -1,7 +1,6 @@
 #include "model.h"
 
 
-
 bool Model::load_model(std::string file_path) {
     std::ifstream file(file_path);
     if (!file) {
@@ -42,11 +41,22 @@ bool Model::load_model(std::string file_path) {
 vec3 Model::get_scaled_point(int width, int height, int v_index) {
     vec3 scaled_vals;
 
-    scaled_vals.x = vertices[v_index].x * (width / 2) + (width / 2);
-    scaled_vals.y = vertices[v_index].y * (height / 2) + (height / 2);
-    scaled_vals.z = (vertices[v_index].z + 1) * (255.0 / 2);
+    // rotate model before scaling points
+    vec3 v = rotation(vertices[v_index]);
+
+    scaled_vals.x = v.x * (width / 2) + (width / 2);
+    scaled_vals.y = v.y * (height / 2) + (height / 2);
+    scaled_vals.z = (v.z + 1) * (255.0 / 2);
 
 
     return scaled_vals;
 }
 
+
+vec3 Model::rotation(vec3 v) {
+    constexpr double a = M_PI / 6;
+
+    const mat<3,3> Ry = {{{std::cos(a), 0, std::sin(a)}, {0, 1, 0}, {-std::sin(a), 0, std::cos(a)}}};
+
+    return Ry * v;
+}
