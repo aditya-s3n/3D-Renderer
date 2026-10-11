@@ -46,7 +46,7 @@ vec3 Model::get_scaled_point(int width, int height, int v_index) {
     
     scaled_vals.x = v.x * (width / 2) + (width / 2);
     scaled_vals.y = v.y * (height / 2) + (height / 2);
-    scaled_vals.z = (v.z + 1) * (255.0 / 2);
+    scaled_vals.z = v.z; // raw depth, not squeezed into 0-255
 
 
     return scaled_vals;
@@ -62,6 +62,7 @@ vec3 Model::rotation(vec3 v, double angle) {
 }
 
 vec3 Model::perspective(vec3 v, double c) {
-    
-    return v / (1 - v.z / c);
+    // only x and y are projected, z is kept as-is for the depth test
+    double w = 1 - v.z / c;
+    return {v.x / w, v.y / w, v.z};
 }

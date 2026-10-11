@@ -2,6 +2,9 @@
 #include "tgaimage.h"
 #include "model.h"
 #include <iostream>
+#include <vector>
+#include <limits>
+#include <algorithm>
 
 
 
@@ -50,13 +53,15 @@ double subtriangle_area(double ax, double ay, double bx, double by, double cx, d
 }
 
 // modern raster approach
-void triangle(int ax, int ay, int az, int bx, int by, int bz, int cx, int cy, int cz, TGAImage& framebuffer, TGAImage &zbuffer, TGAColor color) {
+void triangle(int ax, int ay, double az, int bx, int by, double bz, int cx, int cy, double cz, TGAImage& framebuffer, std::vector<double> &zbuffer, TGAColor color) {
+    const int width = framebuffer.width();
+    const int height = framebuffer.height();
 
-    // find bounding box
-    int bb_min_x = std::min(std::min(ax, bx), cx);
-    int bb_min_y = std::min(std::min(ay, by), cy);
-    int bb_max_x = std::max(std::max(ax, bx), cx);
-    int bb_max_y = std::max(std::max(ay, by), cy);
+    // find bounding box, clipped to the image
+    int bb_min_x = std::max(std::min(std::min(ax, bx), cx), 0);
+    int bb_min_y = std::max(std::min(std::min(ay, by), cy), 0);
+    int bb_max_x = std::min(std::max(std::max(ax, bx), cx), width - 1);
+    int bb_max_y = std::min(std::max(std::max(ay, by), cy), height - 1);
 
 
     // get barycentric coordinates
@@ -85,11 +90,11 @@ void triangle(int ax, int ay, int az, int bx, int by, int bz, int cx, int cy, in
 
 
 
-            unsigned char z = static_cast<unsigned char>(alpha * az + beta * bz + gamma * cz);
+            double z = alpha * az + beta * bz + gamma * cz;
 
             // if point is behind another skip this
-            if (z <= zbuffer.get(x, y)[0]) continue;
-            zbuffer.set(x, y, { z }); // set pixel
+            if (z <= zbuffer[x + y * width]) continue;
+            zbuffer[x + y * width] = z;
 
 
             // TGAColor z_color;
@@ -109,7 +114,7 @@ int main(int argc, char** argv) {
     constexpr int width  = 1000;
     constexpr int height = 1000;
     TGAImage framebuffer(width, height, TGAImage::RGB);
-    TGAImage zbuffer(width, height, TGAImage::GRAYSCALE);
+    std::vector<double> zbuffer(width * height, -std::numeric_limits<double>::infinity());
 
     std::vector<Model> model_list;
 
@@ -169,8 +174,29 @@ int main(int argc, char** argv) {
     
 
 
+    // normalize depth to 0-255 using the actual min/max for the zbuffer image
+    double z_min = std::numeric_limits<double>::infinity();
+    double z_max = -std::numeric_limits<double>::infinity();
+    for (double z : zbuffer) {
+        if (std::isinf(z)) continue;
+        z_min = std::min(z_min, z);
+        z_max = std::max(z_max, z);
+    }
+
+    TGAImage zbuffer_image(width, height, TGAImage::GRAYSCALE);
+    for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
+            double z = zbuffer[x + y * width];
+            
+            if (std::isinf(z) || z_max <= z_min) continue;
+            
+            unsigned char depth = static_cast<unsigned char>((z - z_min) / (z_max - z_min) * 255);
+            zbuffer_image.set(x, y, { depth });
+        }
+    }
+
     framebuffer.write_tga_file("framebuffer.tga");
-    zbuffer.write_tga_file("zbuffer.tga");
+    zbuffer_image.write_tga_file("zbuffer.tga");
     return 0;
 }
 
